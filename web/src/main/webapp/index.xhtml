@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui" xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+<h:head>
+    <title>#{msgs.welcome}</title>
+    <meta property="og:title"
+          content="We generate statuses so you don't have to"/>
+    <meta property="og:site_name" content="The Status Generation"/>
+    <meta property="og:url" content="http://www.knowles.co.za/theStatusGeneration"/>
+    <meta property="og:description"
+          content="Ever get tired of churning out statuses day after day? We'll analyse the content of your statuses, and churn out something that almost could have been written by you. Be amazed, be thrilled, be startled by what almost could have been your own wit - for once, you can amuse yourself."/>
+    <meta property="fb:app_id" content="168518849860681"/>
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'/>
+    <h:outputStylesheet library="css" name="status.css"/>
+    <h:outputScript library="js" name="status.js"/>
+</h:head>
+<h:body>
+    <h:panelGroup layout="block" rendered="#{not isFaceBook}">
+
+        <section class="status-section">
+            <h:form>
+                <p:growl id="msgs" autoUpdate="true" globalOnly="false"/>
+
+                <div class="the-machine nosey-arent-we">
+                    <h1>The Status Generation</h1>
+
+                    <p:commandButton styleClass="see-another" action="#{generationBean.generateNewStatus}"
+                                     update="landing msgs @this" ignoreAutoUpdate="true"
+                                     value="GENERATE"/>
+
+                    <div class="sanity-level">
+                        <h:inputText value="#{generationBean.sanity}" styleClass="hidden">
+                            <p:ajax event="change"/>
+                        </h:inputText>
+
+                        <div class="sanity-low #{generationBean.sanity eq 1 ? 'selected' : ''}">Amish Mode</div>
+                        <div class="sanity-medium #{generationBean.sanity eq 2 ? 'selected' : ''}">Medium</div>
+                        <div class="sanity-high #{generationBean.sanity eq 3 ? 'selected' : ''}">High-ish</div>
+                        <p>Sanity Level</p>
+                    </div>
+
+                    <h:panelGroup class="mash-up" id="mash-up">
+
+                        <div class="opt-button opt-in">
+                            <h:outputText
+                                    value="#{generationBean.optedIn ? 'Opted in for mash up' : 'Opted out of mash up'}"/>
+
+                            <div class="opted-indicator #{generationBean.optedIn ? '' : 'opted-out'}"></div>
+                            <p:remoteCommand name="toggleStatus"
+                                             action="#{generationBean.setOptedIn(not generationBean.optedIn)}"
+                                             update="mash-up"/>
+                        </div>
+                        <h:panelGroup layout="block" styleClass="opt-button mash-up" id="mash-up-picker"
+                                      rendered="#{generationBean.optedIn and not empty facebookBean.optedInFriends}">
+                            <span>Mash up</span>
+                            <h:panelGroup rendered="#{facebookBean.selectedFriendCount gt 0}">
+                                (#{facebookBean.selectedFriendCount} chosen)
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="opt-button no-mash"
+                                      rendered="#{generationBean.optedIn and empty facebookBean.optedInFriends}">
+                            <span>No one to mash with yet :(</span>
+                        </h:panelGroup>
+
+                        <p:dialog header="Mash up" widgetVar="mashUpWidget" modal="true">
+                            <h:panelGroup layout="block" id="friend-list" class="friend-list">
+                                <c:forEach items="#{facebookBean.optedInFriends}" var="friend">
+                                    <p:commandButton styleClass="#{friend.selected ? 'selected' : ''} mash-choice"
+                                                     action="#{generationAction.toggleFriend(friend)}"
+                                                     update="friend-list mash-up-picker"
+                                                     value="#{friend.value.firstName} #{friend.value.lastName}"/>
+                                </c:forEach>
+                            </h:panelGroup>
+                            <button class="done-picking">
+                                Done picking, let's mash up.
+                            </button>
+                        </p:dialog>
+
+                    </h:panelGroup>
+
+                    <div class="eject-pad"></div>
+                    <h:panelGroup class="landing-receptacle" id="landing">
+                        <p class="status"><h:outputText id="status">#{generationBean.status}</h:outputText></p>
+                        <p:commandButton styleClass="post-it"
+                                         action="#{generationAction.postStatus(generationBean.status)}" update="@form"
+                                         value="Post this status"/>
+                    </h:panelGroup>>
+
+
+                    <p:remoteCommand action="#{facebookBean.refreshRecentStatuses}" autoRun="true"
+                                     update="status-count"/>
+
+                    <h:panelGroup layout="block" id="status-count" styleClass="summary">
+                        <span>We have #{facebookBean.statuses.size()} statuses on record for you.</span>
+                        <p:commandButton update="status-count" value="Want to make it more interesting?"
+                                         styleClass="more-statuses"
+                                         action="#{facebookBean.loadMoreStatuses}"/>
+                    </h:panelGroup>
+                </div>
+
+            </h:form>
+
+        </section>
+
+        <script>
+            (function (i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                i[r] = i[r] || function () {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+                a = s.createElement(o),
+                        m = s.getElementsByTagName(o)[0];
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+            ga('create', 'UA-59354181-2', 'auto');
+            ga('send', 'pageview');
+
+        </script>
+    </h:panelGroup>
+</h:body>
+</html>

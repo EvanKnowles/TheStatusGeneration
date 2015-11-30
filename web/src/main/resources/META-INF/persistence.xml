@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
+    <persistence-unit name="theDb">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>java:jboss/datasources/mySQLds</jta-data-source>
+
+        <class>za.co.knonchalant.status.Status</class>
+        <class>za.co.knonchalant.status.StatusUser</class>
+        <class>za.co.knonchalant.status.PostedStatus</class>
+
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+        </properties>
+
+    </persistence-unit>
+
+
+</persistence>
